@@ -35,7 +35,43 @@
     
     # Powtarzaj dla n=2, ... N/2:
     powtarzaj:
-        bgt $t0, $t3, end_powtarzaj	# dopóki counter (i) <= N/2        
+        bgt $t0, $t3, end_powtarzaj	# dopóki counter (i) <= N/2 
+            
+        # OPTYMALIZACJA: jesli dana liczba i jest wielokrotnoscia liczby juz znalezionej to continue
+        check_2:
+            # (i % 2 == 0 && i != 2) ? -> continue
+            li $t6, 2	# operacje z 2
+            beq $t0, $t6, end_check	# i == 2 ?
+            div $t0, $t6	# wykonuje dzielenie
+            mfhi $t1	# sprawdzam resztê (i % 2)
+            bnez $t1, check_3	# (i % 2 != 0) -> check_3
+            j end_wykresl	# else if (i % 2 == 0 && i != 2) -> continue	
+        check_3:
+            # (i % 3 == 0 && i != 3) ? -> continue
+            li $t6, 3	# operacje z 3
+            beq $t0, $t6, end_check	# i == 3 ?
+            div $t0, $t6	# wykonuje dzielenie
+            mfhi $t1	# sprawdzam resztê (i % 3)
+            bnez $t1, check_5	# (i % 3 != 0) -> check_5
+            j end_wykresl	# else if (i % 3 == 0 && i != 3) -> continue
+        check_5:
+            # (i % 5 == 0 && i != 5) ? -> continue
+            li $t6, 5	# operacje z 5
+            beq $t0, $t6, end_check	# i == 5 ?
+            div $t0, $t6	# wykonuje dzielenie
+            mfhi $t1	# sprawdzam resztê (i % 5)
+            bnez $t1, check_7	# (i % 5 != 0) -> check_7
+            j end_wykresl	# else if (i % 5 == 0 && i != 5) -> continue	
+        check_7:
+            # (i % 7 == 0 && i != 7) ? -> continue
+            li $t6, 7	# operacje z 7
+            beq $t0, $t6, end_check	# i == 7 ?
+            div $t0, $t6	# wykonuje dzielenie
+            mfhi $t1	# sprawdzam resztê (i % 7)
+            bnez $t1, end_check	# (i % 7 != 0) -> check_
+            j end_wykresl	# else if (i % 3 == 0 && i != 3) -> continue		
+        
+        end_check:   
         add $t4, $t0, $t0		# ustawiam counter (j) na i + i 
         # Wykreœl z tablicy wszystkie wielokrotnoœci liczby n 
         wykresl:
@@ -65,7 +101,8 @@
     li $t4, 0		# zerujê rejestr $t4 na zliczanie liczb pierwszych
     
     zapisywanie:
-        bge $t0, $t3, end_zapisywanie	# dopóki counter(i) >= N/2
+        # B£¥D: zamiast $t3 - $t2
+        bge $t0, $t2, end_zapisywanie	# dopóki counter(i) >= N/2
         sll $t1, $t0, 2		# przesuniecie = counter(i) * 4(dlugosc slowa w bajtach)
         lw $t6, numall($t1)		# ³adujê do rejestru kolejn¹ liczbê - numall[i]
         beqz $t6, after_storing		# jeœli jest równa zero to pomiñ nastêpne 3 linie
