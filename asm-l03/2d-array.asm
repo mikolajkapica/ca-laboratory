@@ -8,6 +8,7 @@
     prompt_indeks_kolumny:	.asciiz "Indeks kolumny: "
     prompt_liczba:	.asciiz "Liczba: "
 .text
+    # pytam o wartoœci
     la $a0, prompt_wiersze
     li $v0, 4
     syscall
@@ -51,37 +52,47 @@
         addi $t1, $t1, 4	# aktualizujê wskaŸnik w tablicy adresów wierszów
         blt $t3, $s0, adresy	# jeœli numer wiersza jest mniejszy od liczby wierszy to kontynuuj
     
-    operacje:    
+    operacje:   
+        # wypisujê zapytanie 
         la $a0, prompt_operacja
         li $v0, 4
         syscall
+        
+        # pytam o operacjê
         li $v0, 12
         syscall
         move $s7, $v0
-        # Print a newline
-        li $v0, 11   # Print character system call
+        # drukuje nowa linie
+        li $v0, 11
         li $a0, 10   # ASCII value for newline
         syscall
         
+        # jesli operacja nalezy do zbioru {z, Z, o, O} to przeskocz obsluge bledu
         beq $s7, 90, end_blad
         beq $s7, 122, end_blad
         beq $s7, 111, end_blad
         beq $s7, 079, end_blad
+        
+        # jesli operacja nalezy do zbioru {e, E} to przeskocz do zakonczenia programu
         beq $s7, 101, end
         beq $s7, 069, end
+        
+        # inaczej mamy blad, wiec wypisuje komunikat i pytam kolejny raz
         la $a0, prompt_error
         li $v0, 4
         syscall
         j operacje
         end_blad:
         
+        # pytanie o wiersz
         la $a0, prompt_indeks_wiersza
         li $v0, 4
         syscall
         li $v0, 5
         syscall
         move $s0, $v0
-    
+        
+        # pytanie o kolumne
         la $a0, prompt_indeks_kolumny
         li $v0, 4
         syscall
@@ -95,33 +106,36 @@
         mul $t0, $s0, 4	# adres komorki w tablicy adresów wierszów
         lw $t0, RAM($t0)	# adres wiersza szukanego
         mul $t1, $s1, 4	# kolumna * d³ugoœæ s³owa 
-        add $s2, $t0, $t1	# pozycja w pamiêci naszej komórki
+        
         # $s2 - adres komórki
+        add $s2, $t0, $t1	# pozycja w pamiêci naszej komórki
+        
     
-        beq $s7, 90, zapis
+        beq $s7, 90, zapis	# jesli s7 = 'Z' lub 'z' to zapis
         beq $s7, 122, zapis
-        beq $s7, 111, odczyt
+        beq $s7, 111, odczyt	# jesli s7 = 'o' lub 'O' to odczyt
         beq $s7, 079, odczyt
         
     
         zapis:
-            la $a0, prompt_liczba
+            la $a0, prompt_liczba	# zapytaj o liczbe do wpisania
             li $v0, 4
             syscall
             li $v0, 5
             syscall
+            
+            # zapisywanie tej liczby do komorki o wskazanym adresie $s2
             sw $v0, RAM($s2)
-            j operacje
+            j operacje	# powrot do pytania o operacje
         
         odczyt:
-            lw $a0, RAM($s2)
+            lw $a0, RAM($s2)	# zapisz liczbe o wskazanym adresie $s2 do rejestru 
             li $v0, 1
             syscall
-            # Print a newline
-            li $v0, 11   # Print character system call
-            li $a0, 10   # ASCII value for newline
+            li $v0, 11	# drukowanie litery
+            li $a0, 10	# ASCII value for newline
             syscall
-            j operacje
+            j operacje	# powrot do pytania o operacje
     end:
         li $v0, 10
         syscall

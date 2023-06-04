@@ -3,8 +3,8 @@
     liczba_wierszy:	.word 31
     liczba_kolumn:	.word 32
 .text
-    lw $s0, liczba_wierszy    
-    lw $s1, liczba_kolumn
+    lw $s0, liczba_wierszy    	# ³adujê do rejestru liczbe_wierszy
+    lw $s1, liczba_kolumn	# ³adujê do rejestru liczbe_kolumn
     
     # $s0 - liczba wierszy
     # $s1 - liczba kolumn
@@ -22,7 +22,7 @@
     adresy:
         sw $t0, RAM($t1)	# zapisuje adres tablicy na miejscu dotykanym przez wskaŸnik
         mul $t4, $t3, 100	# liczba := numer wiersza * 100
-        li $t2, 0
+        li $t2, 0	# resetuje numer kolumny
         komorki:		
             addi $t4, $t4, 1	# liczba := liczba + 1 (np. 101, 102, 103...)
             sw $t4, RAM($t0)	# zapisujê t¹ liczbê do tablicy
@@ -33,6 +33,7 @@
         addi $t1, $t1, 4	# aktualizujê wskaŸnik w tablicy adresów wierszów
         blt $t3, $s0, adresy	# jeœli numer wiersza jest mniejszy od liczby wierszy to kontynuuj
         
+    # poprawne zakonczenie programu    
     li $v0, 10
     syscall
     
