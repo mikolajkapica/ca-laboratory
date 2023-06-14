@@ -23,6 +23,9 @@ global_array: .word 1, 2, 3, 4, 5, 6, 7, 8, 9, 10
 # wywoływany jest tylko raz
 main:
     # ciało programu . . .
+    # int s
+    subi $sp, $sp, 4
+
     # umieszcza na stosie kolejne argumenty funkcji - od lewej do prawej 
     subi $sp, $sp, 8     # 8 = 2 * sizeof( int )
     li $t1, 10           # drugi argument sum
@@ -33,13 +36,17 @@ main:
     # wywołuje funkcję rozkazem
     jal sum
     
-    lw $a0, ($sp) # pobiera ze stosu wartość zwróconą przez wywołany podprogram
+    lw $t0, ($sp) # pobiera ze stosu wartość zwróconą przez wywołany podprogram
     addi $sp, $sp, 12 # przesuwa wskaźnik stosu tak aby usunąć z niego wartość zwracaną 
                       # oraz argumenty podprogramu położone na stos przed jego wywołaniem
+    sw $t0, ($sp) # zapisuje wartosc zwracana na stos int s
     
     # print
     li $v0, 1
+    lw $a0, ($sp)
     syscall
+
+    addi $sp, $sp, 4    # usuwa s ze stosu
     
     # koniec podprogramu main:
     lw $sp, sys_stack_addr # odtworzenie wskaźnika stosu
@@ -55,6 +62,7 @@ sum:
                      # 8 = 2 * sizeof( int )
     
     # stos wyglada teraz tak:
+    # 24($sp) int s
     # 20($sp) int *array
     # 16($sp) int array_size
     # 12($sp) wartosc zwracana
